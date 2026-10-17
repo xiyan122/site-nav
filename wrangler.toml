@@ -1,0 +1,21 @@
+name = "site-nav"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# 静态资源（导航站页面 + 管理后台）
+[assets]
+directory = "./public"
+
+# KV 存储：站点数据 / 配置 / 会话（Deploy to Cloudflare 会自动创建）
+[[kv_namespaces]]
+binding = "NAV_KV"
+
+# 每日定时扫描：00:30 UTC = 北京时间 08:30
+[triggers]
+crons = ["30 0 * * *"]
+
+[vars]
+OWNER = "pengyuyan29"
+# 首次启动时自动带入的扫描账号与手动补充站点（此后在管理后台增删，这里不再生效）
+SEED_OWNERS = "xiyan122,Qianshuy99"
+SEED_SITES = "[{\"repo\":\"musicplayer\",\"owner\":\"xiyan122\",\"url\":\"http://linxiz.loc.cc/\",\"description\":\"音乐播放器（原 xiyan122/musicplayer，已绑定自定义域名）\"},{\"repo\":\"健康监控\",\"url\":\"https://tfa.qingqian.com/health/\",\"description\":\"站点在线状态监控\",\"cat\":\"collect\"}]"

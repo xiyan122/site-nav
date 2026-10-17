@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>管理后台 · 站点导航</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #0b0f17; --card: #111827; --text: #e6edf6; --dim: #8b98ad; --gray: #55637a;
+    --border: #232c3d; --border-strong: #38445c; --accent: #6ea8fe;
+    --accent-soft: rgba(110,168,254,.12); --green: #3fb96f; --red: #e5534b;
+    --input-bg: #0b0f17;
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f6fb; --card: #ffffff; --text: #17263f; --dim: #5b6779; --gray: #9aa6b8;
+    --border: #e3e8f2; --border-strong: #c9d3e4; --accent: #2f6fe0;
+    --accent-soft: rgba(47,111,224,.09); --green: #1f9d55; --red: #d43a31;
+    --input-bg: #ffffff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); padding: 24px 20px 60px;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: var(--dim); font-size: 13px; margin-bottom: 24px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 15px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .card h2 .bar { width: 4px; height: 15px; border-radius: 2px; background: var(--accent); }
+  input, select {
+    padding: 9px 12px; border-radius: 10px; font-size: 14px;
+    border: 1px solid var(--border); background: var(--input-bg); color: var(--text); outline: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  button {
+    padding: 9px 16px; border-radius: 10px; cursor: pointer; font-size: 14px;
+    border: 1px solid var(--border); background: transparent; color: var(--dim);
+  }
+  button:hover { color: var(--text); border-color: var(--border-strong); }
+  button.primary { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+  button.primary:disabled { opacity: .5; cursor: wait; }
+  button.danger:hover { color: var(--red); border-color: var(--red); }
+  button.mini { padding: 4px 10px; font-size: 12px; border-radius: 8px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--dim); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  td a { color: var(--text); text-decoration: none; }
+  td a:hover { color: var(--accent); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot.on { background: var(--green); }
+  .dot.off { background: var(--gray); }
+  .dot.custom { background: var(--accent); }
+  .tag { font-size: 11px; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+  .tag.dim { background: transparent; border: 1px solid var(--border); color: var(--dim); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 99px; border: 1px solid var(--border); font-size: 13px; }
+  .chip button { padding: 0 4px; border: none; font-size: 13px; color: var(--dim); background: none; }
+  .chip button:hover { color: var(--red); }
+  pre {
+    background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px; font-size: 12px; line-height: 1.7; overflow: auto; max-height: 300px;
+    color: var(--dim); white-space: pre-wrap;
+  }
+  .muted { color: var(--dim); font-size: 12px; }
+  label { display: block; color: var(--dim); font-size: 12px; margin: 10px 0 5px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  .login-card { max-width: 380px; margin: 80px auto 0; }
+  .login-card input { width: 100%; margin-bottom: 12px; }
+  .err { color: var(--red); font-size: 13px; margin-top: 8px; min-height: 18px; }
+  .ok-msg { color: var(--green); font-size: 13px; }
+  a { color: var(--accent); text-decoration: none; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 登录 / 首次设置 -->
+  <div class="card login-card" id="authCard">
+    <h1 id="authTitle">登录</h1>
+    <p class="sub" id="authSub">输入管理密码进入后台</p>
+    <input type="password" id="pwd" placeholder="管理密码（至少 6 位）" autocomplete="current-password">
+    <button class="primary" style="width:100%" id="authBtn">进入</button>
+    <div class="err" id="authErr"></div>
+    <p class="muted hidden" id="switchTip">已有密码？<a href="#" id="switchLink">去登录</a></p>
+  </div>
+
+  <!-- 面板 -->
+  <div id="panel" class="hidden">
+    <div class="row" style="justify-content:space-between; margin-bottom:18px">
+      <div>
+        <h1>站点导航 · 管理后台</h1>
+        <p class="sub" id="scanInfo">加载中…</p>
+      </div>
+      <div class="row">
+        <button class="primary" id="scanBtn">立即扫描</button>
+        <a href="/" target="_blank"><button>查看导航站</button></a>
+        <button id="logoutBtn">退出</button>
+      </div>
+    </div>
+
+    <!-- 站点列表 -->
+    <div class="card">
+      <h2><span class="bar"></span>站点列表 <span class="muted" id="siteCount"></span></h2>
+      <div style="overflow:auto">
+        <table>
+          <thead><tr><th>站点</th><th>地址</th><th>来源</th><th style="width:130px">操作</th></tr></thead>
+          <tbody id="siteRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 添加站点 -->
+    <div class="card">
+      <h2><span class="bar"></span>添加站点</h2>
+      <div class="row" style="margin-bottom:4px">
+        <select id="mCat" style="min-width:150px">
+          <option value="collect">收藏夹（外部网站）</option>
+          <option value="self">自建站（自己的服务）</option>
+          <option value="ghost">手动补充 Pages（自动扫不到的）</option>
+        </select>
+      </div>
+      <div class="grid2">
+        <div><label>站点名称 *</label><input id="mRepo" placeholder="例如：B站" style="width:100%"></div>
+        <div><label>网址 *</label><input id="mUrl" placeholder="https://example.com/" style="width:100%"></div>
+      </div>
+      <label id="ownerLabel" class="hidden">归属账号（Ghost 站显示在谁的名下分类）</label>
+      <input id="mOwner" class="hidden" placeholder="留空 = 主账号" style="width:100%">
+      <label>描述（可选）</label>
+      <input id="mDesc" placeholder="一句话说明" style="width:100%">
+      <div class="row" style="margin-top:14px">
+        <button class="primary" id="mAdd">添加</button>
+        <span class="muted" id="mMsg"></span>
+      </div>
+    </div>
+
+    <!-- 扫描账号 -->
+    <div class="card">
+      <h2><span class="bar"></span>扫描账号</h2>
+      <p class="muted" style="margin-bottom:12px">这些 GitHub 账号名下开启了 Pages 的仓库会被自动收录；增删后点「立即扫描」生效。</p>
+      <div class="chips" id="ownerChips"></div>
+      <div class="row" style="margin-top:14px">
+        <input id="ownerInput" placeholder="GitHub 用户名，例如 xiyan122" style="min-width:240px">
+        <button id="ownerAdd">添加账号</button>
+      </div>
+    </div>
+
+    <!-- 扫描设置 -->
+    <div class="card">
+      <h2><span class="bar"></span>扫描设置</h2>
+      <p class="muted" style="margin-bottom:12px">
+        填入 GitHub 个人访问令牌（PAT）可让扫描 <b>100% 全量覆盖</b>（含私有仓库）。
+        创建：<a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained PAT</a>
+        → Repository access 选 <b>All repositories</b> → 权限只需 <b>Metadata: Read-only</b>（只读，泄露无害）。
+      </p>
+      <div class="row">
+        <input type="password" id="tokenInput" placeholder="github_pat_… （已设置则留空即保持不变）" style="min-width:340px">
+        <button id="tokenSave">保存令牌</button>
+        <span id="tokenState" class="muted"></span>
+      </div>
+    </div>
+
+    <!-- 扫描日志 -->
+    <div class="card">
+      <h2><span class="bar"></span>最近一次扫描日志</h2>
+      <pre id="scanLog">（暂无）</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let authed = false;
+
+// ===== 认证流 =====
+async function boot() {
+  const st = await (await fetch('/api/auth-state')).json();
+  if (!st.initialized) {
+    $('authTitle').textContent = '初始化';
+    $('authSub').textContent = '首次使用：设置一个管理密码（只存于此 Worker）';
+    $('authBtn').textContent = '创建密码并进入';
+    $('switchTip').classList.remove('hidden');
+  }
+  // 已登录则直接进面板
+  const state = await tryState();
+  if (state) showPanel(state);
+}
+
+async function tryState() {
+  const r = await fetch('/api/admin/state');
+  if (r.ok) return r.json();
+  return null;
+}
+
+function authAction() {
+  const pwd = $('pwd').value;
+  const st = $('authTitle').textContent === '初始化' ? 'setup' : 'login';
+  fetch(st === 'setup' ? '/api/setup' : '/api/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pwd }),
+  }).then(async r => {
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || '失败');
+    const state = await tryState();
+    if (state) showPanel(state);
+  }).catch(e => { $('authErr').textContent = e.message; });
+}
+$('authBtn').addEventListener('click', authAction);
+$('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') authAction(); });
+$('switchLink').addEventListener('click', e => {
+  e.preventDefault();
+  $('authTitle').textContent = '登录';
+  $('authSub').textContent = '输入管理密码进入后台';
+  $('authBtn').textContent = '进入';
+});
+
+function showPanel(state) {
+  authed = true;
+  $('authCard').classList.add('hidden');
+  $('panel').classList.remove('hidden');
+  render(state);
+}
+
+$('logoutBtn').addEventListener('click', () => fetch('/api/logout', { method: 'POST' }).then(() => location.reload()));
+
+// ===== 面板渲染 =====
+function render(state) {
+  const catLabel = s => s.status === 'custom' ? (s.cat === 'self' ? '自建' : '收藏') : '自动';
+  $('scanInfo').textContent = `上次扫描：${state.lastScan ? state.lastScan.time.replace('T', ' ').slice(0, 16).replace('Z', ' UTC') + '（' + state.lastScan.trigger + '）' : '从未'} · ${state.updated_at ? '数据更新于 ' + state.updated_at : ''}`;
+  $('siteCount').textContent = `共 ${state.sites.length} 个`;
+
+  const rows = state.sites.map(s => {
+    const key = { repo: s.repo, owner: s.owner || state.owner };
+    const isAuto = s.status !== 'custom' && !isManual(state, s);
+    const srcTag = s.status === 'custom'
+      ? `<span class="tag">${catLabel(s)}</span>`
+      : isManual(state, s) ? `<span class="tag">手动</span>` : `<span class="tag dim">自动</span>`;
+    const hidden = isExcluded(state, s);
+    const dot = s.status === 'custom' ? 'custom' : s.status === 'online' ? 'on' : 'off';
+    const ops = [];
+    if (!s.status || s.status !== 'custom') {
+      ops.push(`<button class="mini" data-act="exclude" data-hide="${hidden ? '0' : '1'}" data-repo="${esc(s.repo)}" data-owner="${esc(s.owner || state.owner)}">${hidden ? '取消隐藏' : '隐藏'}</button>`);
+    }
+    if (s.status === 'custom' || isManual(state, s)) {
+      ops.push(`<button class="mini danger" data-act="del-manual" data-repo="${esc(s.repo)}" data-cat="${s.cat || ''}">删除</button>`);
+    }
+    return `<tr>
+      <td><span class="dot ${dot}"></span><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.repo)}</a>
+        <span class="muted">@${esc(s.owner || state.owner)}</span> ${hidden ? '<span class="tag dim">已隐藏</span>' : ''}</td>
+      <td class="muted" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a></td>
+      <td>${srcTag}</td>
+      <td>${ops.join(' ')}</td>
+    </tr>`;
+  });
+  $('siteRows').innerHTML = rows.join('') || '<tr><td colspan="4" class="muted">暂无站点，先配置扫描令牌并立即扫描</td></tr>';
+
+  // 账号 chips
+  $('ownerChips').innerHTML = state.config.owners.map(o =>
+    `<span class="chip">${esc(o)}${o === state.owner ? ' <span class="muted">(主账号)</span>' : `<button data-owner="${esc(o)}" title="移除">×</button>`}</span>`
+  ).join('');
+  $('ownerChips').querySelectorAll('button').forEach(b => b.addEventListener('click', () =>
+    admin('owner', 'DELETE', { name: b.dataset.owner }).then(refresh)));
+
+  // 令牌状态
+  $('tokenState').innerHTML = state.hasToken ? '<span class="ok-msg">✓ 已设置</span>' : '未设置（匿名扫描，覆盖不全）';
+
+  // 日志
+  $('scanLog').textContent = state.lastScan
+    ? `[${state.lastScan.time}] trigger=${state.lastScan.trigger}\n` + state.lastScan.lines.join('\n')
+    : '（暂无）';
+}
+
+const isManual = (state, s) => (state.config.extraSites || []).some(e => e.repo === s.repo && !e.cat);
+const isExcluded = (state, s) => (state.config.exclude || []).some(e => e.repo === s.repo && e.owner === (s.owner || state.owner));
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+async function admin(path, method, body) {
+  const r = await fetch('/api/admin/' + path, {
+    method, headers: { 'Content-Type': 'application/json' },
+    body: method === 'GET' ? undefined : JSON.stringify(body || {}),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || r.status);
+  return d;
+}
+
+async function refresh() {
+  const state = await tryState();
+  if (state) render(state);
+}
+
+// ===== 事件绑定 =====
+$('siteRows').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.act === 'exclude')
+    admin('exclude', 'POST', { repo: b.dataset.repo, owner: b.dataset.owner, hide: b.dataset.hide === '1' }).then(refresh).catch(alert);
+  if (b.dataset.act === 'del-manual')
+    confirm('确定删除「' + b.dataset.repo + '」？') &&
+      admin('manual', 'DELETE', { repo: b.dataset.repo, cat: b.dataset.cat }).then(refresh).catch(alert);
+});
+
+$('mCat').addEventListener('change', () => {
+  const ghost = $('mCat').value === 'ghost';
+  $('ownerLabel').classList.toggle('hidden', !ghost);
+  $('mOwner').classList.toggle('hidden', !ghost);
+});
+
+$('mAdd').addEventListener('click', () => {
+  const cat = $('mCat').value;
+  const body = {
+    repo: $('mRepo').value.trim(), url: $('mUrl').value.trim(),
+    description: $('mDesc').value.trim(),
+    cat: cat === 'ghost' ? '' : cat, owner: $('mOwner').value.trim(),
+  };
+  if (!body.repo || !body.url) return $('mMsg').textContent = '名称和网址必填';
+  $('mAdd').disabled = true; $('mMsg').textContent = '提交中…';
+  admin('manual', 'POST', body)
+    .then(() => { $('mMsg').textContent = '✓ 已添加'; $('mRepo').value = ''; $('mUrl').value = ''; $('mDesc').value = ''; refresh(); })
+    .catch(e => $('mMsg').textContent = e.message)
+    .finally(() => { $('mAdd').disabled = false; setTimeout(() => $('mMsg').textContent = '', 3000); });
+});
+
+$('ownerAdd').addEventListener('click', () => {
+  const name = $('ownerInput').value.trim();
+  if (!name) return;
+  admin('owner', 'POST', { name }).then(() => { $('ownerInput').value = ''; refresh(); }).catch(alert);
+});
+
+$('tokenSave').addEventListener('click', () => {
+  const token = $('tokenInput').value.trim();
+  if (!token) return;
+  admin('token', 'POST', { token }).then(() => { $('tokenInput').value = ''; refresh(); }).catch(alert);
+});
+
+$('scanBtn').addEventListener('click', () => {
+  $('scanBtn').disabled = true; $('scanBtn').textContent = '扫描中…';
+  admin('scan', 'POST', {})
+    .then(d => { $('scanLog').textContent = `[${d.log.time}] trigger=${d.log.trigger}\n` + d.log.lines.join('\n'); return refresh(); })
+    .catch(alert)
+    .finally(() => { $('scanBtn').disabled = false; $('scanBtn').textContent = '立即扫描'; });
+});
+
+boot();
+</script>
+</body>
+</html>
